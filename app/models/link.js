@@ -18,6 +18,9 @@ var Link = db.Model.extend({
       model.set('code', shasum.digest('hex').slice(0, 5));
     });
   }
+
+  // add a one-to-many reltnshp with a user
+
 });
 
 module.exports = Link;
