@@ -47,9 +47,9 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 db.knex.schema.hasTable('users').then(function(exists) {
   if (!exists) {
     db.knex.schema.createTable('users', function (user) {
-      link.increments('id').primary();
-      link.string('code1', 255); // username hash
-      link.string('code2', 255); // password hash
+      user.increments('id').primary();
+      user.string('code1', 255); // username hash
+      user.string('code2', 255); // password hash
     }).then(function (table) {
       console.log('Created Table', table);
     });
