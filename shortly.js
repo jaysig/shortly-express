@@ -35,12 +35,12 @@ function(req, res) {
 
 app.get('/login',
 function(req, res) {
-  res.render('index');
+  res.render('login');
 });
 
 app.get('/signup',
 function(req, res) {
-  res.render('index');
+  res.render('signup');
 });
 
 app.get('/links',

@@ -15,8 +15,8 @@ var User = db.Model.extend({
   initialize: function() {
     var that = this;
     this.on('creating', function(model, attrs, options) {
-      that.hasher(that.model.get('username'), 'code1');
-      that.hasher(that.model.get('password'), 'code2');
+      that.hasher(that.model.set('username'), 'code1');
+      that.hasher(that.model.set('password'), 'code2');
     });
   }
 });
