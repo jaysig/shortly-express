@@ -10,7 +10,7 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
-
+var session = require('express-session');
 var app = express();
 
 app.set('views', __dirname + '/views');
@@ -21,29 +21,34 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
+app.use(session({
+  secret: 'einstein',
+  saveUninitialized: true,
+  cookie: { secure: true }
+}));
+//function takes in a user
+ function restrict (req,res,next){
+  if(req.session.user){
+    next();
+  } else{
+    req.session.error = 'Access denied';
+    res.redirect('/login');
+  }
+  //check for session
+  //if exists
+};
 
-
-app.get('/',
+app.get('/', restrict,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create',
+app.get('/create', restrict,
 function(req, res) {
   res.render('index');
 });
 
-app.get('/login',
-function(req, res) {
-  res.render('login');
-});
-
-app.get('/signup',
-function(req, res) {
-  res.render('signup');
-});
-
-app.get('/links',
+app.get('/links', restrict,
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
@@ -88,7 +93,29 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+app.get('/login',
+function(req, res) {
+  res.render('login');
+});
 
+app.post('/login')
+//anno function req,res,
+// var password = req.body.password
+// var username = req.body.usernane
+//new instance of a user model
+//pass in username
+//try and fetch
+//if found & match
+//create session
+//send to index
+//else if username found 
+//login
+//else
+// signup
+app.get('/signup',
+function(req, res) {
+  res.render('signup');
+});
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
