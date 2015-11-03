@@ -36,7 +36,7 @@ app.use(session({
   }
   //check for session
   //if exists
-};
+}
 
 app.get('/', restrict,
 function(req, res) {
@@ -98,25 +98,61 @@ function(req, res) {
   res.render('login');
 });
 
-app.post('/login')
-//anno function req,res,
-// var password = req.body.password
-// var username = req.body.usernane
-//new instance of a user model
-//pass in username
-//try and fetch
-//if found & match
-//create session
-//send to index
-//else if username found 
-//login
-//else
-// signup
+app.post('/login', function(req, res) {
+  var password = req.body.password;
+  var username = req.body.username;
+  new User({code1: username}).fetch().then(function(found) {
+    if(found) {
+      if(bcrypt.compare(password,encrypted, function(err,res) {
+        return res;
+      })) {
+        req.session.regenerate(function() {
+          req.session.user = username;
+          res.redirect('/');
+        });
+      } else {
+        res.redirect('/login');
+      }
+    } else {
+      res.redirect('/signup');
+    }
+  });
+});
+
 app.get('/signup',
 function(req, res) {
   res.render('signup');
 });
 
+app.post('/signup', function(req, res) {
+  var password = req.body.password;
+  var username = req.body.username;
+  new User({code1: username}).fetch().then(function(found) {
+    if(found) {
+      res.redirect('/login');
+    } else{
+      var user = new User({
+        username: username,
+        password: password
+      });
+
+      user.save().then(function(newUser) {
+        Users.add(newUser);
+        res.send(200, newUser);
+        req.session.regenerate(function() {
+          req.session.user = username;
+          res.redirect('/');
+      });
+    })
+  }
+  });
+});
+
+app.get('/logout', function(request, response){
+    request.session.destroy(function(){
+        response.redirect('/');
+    });
+});
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
 // assume the route is a short code and try and handle it here.
