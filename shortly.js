@@ -3,7 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 
-
+var bcrypt = require('bcrypt-nodejs');
 var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
@@ -102,10 +102,9 @@ app.post('/login', function(req, res) {
   var password = req.body.password;
   var username = req.body.username;
   new User({code1: username}).fetch().then(function(found) {
+    console.log(found.attributes.code2 + " found here");
     if(found) {
-      if(bcrypt.compare(password,encrypted, function(err,res) {
-        return res;
-      })) {
+      if(bcrypt.compareSync(password,found.attributes.code2)) {
         req.session.regenerate(function() {
           req.session.user = username;
           res.redirect('/');
@@ -127,23 +126,27 @@ function(req, res) {
 app.post('/signup', function(req, res) {
   var password = req.body.password;
   var username = req.body.username;
+  var salt = bcrypt.genSaltSync(8)
+  var hashed = bcrypt.hashSync(password, salt);
+  console.log(hashed + " hash test");
   new User({code1: username}).fetch().then(function(found) {
     if(found) {
       res.redirect('/login');
     } else{
       var user = new User({
-        username: username,
-        password: password
+        code1: username,
+        code2: hashed
+
       });
 
       user.save().then(function(newUser) {
         Users.add(newUser);
-        res.send(200, newUser);
+        // res.send(200, newUser);
         req.session.regenerate(function() {
           req.session.user = username;
           res.redirect('/');
-      });
-    })
+        });
+    });
   }
   });
 });
