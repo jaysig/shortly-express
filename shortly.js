@@ -24,19 +24,17 @@ app.use(express.static(__dirname + '/public'));
 app.use(session({
   secret: 'einstein',
   saveUninitialized: true,
-  cookie: { secure: true }
+  resave: false,
 }));
 //function takes in a user
- function restrict (req,res,next){
+ var restrict = function (req,res,next){
   if(req.session.user){
     next();
   } else{
     req.session.error = 'Access denied';
     res.redirect('/login');
   }
-  //check for session
-  //if exists
-}
+};
 
 app.get('/', restrict,
 function(req, res) {
@@ -101,12 +99,15 @@ function(req, res) {
 app.post('/login', function(req, res) {
   var password = req.body.password;
   var username = req.body.username;
-  new User({code1: username}).fetch().then(function(found) {
-    console.log(found.attributes.code2 + " found here");
+
+  new User({code1: username})
+  .fetch()
+  .then(function(found) {
     if(found) {
-      if(bcrypt.compareSync(password,found.attributes.code2)) {
-        req.session.regenerate(function() {
+      if(bcrypt.compareSync(password, found.attributes.code2)) {
+          return req.session.regenerate(function() {
           req.session.user = username;
+          res.session = 'req.session';
           res.redirect('/');
         });
       } else {
@@ -126,9 +127,8 @@ function(req, res) {
 app.post('/signup', function(req, res) {
   var password = req.body.password;
   var username = req.body.username;
-  var salt = bcrypt.genSaltSync(8)
+  var salt = bcrypt.genSaltSync(8);
   var hashed = bcrypt.hashSync(password, salt);
-  console.log(hashed + " hash test");
   new User({code1: username}).fetch().then(function(found) {
     if(found) {
       res.redirect('/login');
